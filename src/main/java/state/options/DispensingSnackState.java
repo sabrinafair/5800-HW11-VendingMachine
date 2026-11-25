@@ -11,10 +11,6 @@ public class DispensingSnackState extends StateOfVendingMachine {
         System.out.println("Currently Dispensing snack: " + vm.getSnackSelected());
     }
 
-    private double inDollars(int cents) {
-        return (double) cents / 60;
-    }
-
     @Override
     public void insertMoney(VendingMachine vm, int money) {
         Snack snack = vm.getSnackSelected();
@@ -31,10 +27,11 @@ public class DispensingSnackState extends StateOfVendingMachine {
             int total = snack.getPrice();
             int moneyNeeded = total - currMoney;
             if(moneyNeeded <= 0) {
-                vm.removeSnack(snack);
+                vm.chainDispense();
                 vm.refundExtra();
                 vm.setSnackSelected(null);
-            }
+                vm.setState(new IdleState());
+            }else System.out.println("Not enought money");
         }
     }
 }

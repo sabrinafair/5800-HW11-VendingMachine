@@ -20,12 +20,12 @@ public class IdleState extends StateOfVendingMachine {
     }
 
     private double inDollars(int cents) {
-        return (double) cents / 60;
+        return cents / 100.0;
     }
 
     @Override
     public void insertMoney(VendingMachine vm, int money) {
-        vm.addMoneyInput(money);
+        System.out.println("Please select snack first");
     }
 
     @Override

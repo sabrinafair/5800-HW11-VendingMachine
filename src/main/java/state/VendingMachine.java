@@ -1,6 +1,7 @@
 package state;
 
 import config.Config;
+import handlers.SnackDispenseHandler;
 import model.Snack;
 import state.options.IdleState;
 
@@ -9,10 +10,10 @@ import java.util.List;
 public class VendingMachine {
 //    Should reference state of Vending Machine and SnackDispenser plus hold all snacks.
 private StateOfVendingMachine state;
+private SnackDispenseHandler dispenseHandler;
 private List<Snack> allSnacks;
 private Snack snackSelected;
 private int moneyInput; //in cents
-
 
     public VendingMachine() {
         state = new IdleState();
@@ -35,13 +36,22 @@ private int moneyInput; //in cents
         state.insertMoney(this, money);
     }
 
-    public void dispenseSnack(String snackname){
+    public void dispenseSnack(){
         state.dispenseSnack(this);
     }
-
     //chain of responsibility
-    public void dispenseSnack(){
+    public SnackDispenseHandler getDispenseHandler() {
+        return dispenseHandler;
+    }
 
+    public void setDispenseHandler(SnackDispenseHandler dispenseHandler) {
+        this.dispenseHandler = dispenseHandler;
+    }
+
+    public boolean chainDispense() {
+        if(this.dispenseHandler == null || snackSelected == null) return false;
+
+        return dispenseHandler.handle(this, snackSelected.getName());
     }
 
 
@@ -50,7 +60,10 @@ private int moneyInput; //in cents
     }
 
     public void removeSnack(Snack snack) {
-        this.allSnacks.add(snack);
+        if(snack != null && snack.getQuantity() > 0){
+            snack.setQuantity(snack.getQuantity() - 1);
+            if(snack.getQuantity() == 0) this.allSnacks.remove(snack);
+        }
     }
 
     public void refundExtra() {

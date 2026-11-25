@@ -20,7 +20,7 @@ public class WaitingForMoneyState extends StateOfVendingMachine {
     }
 
     private double inDollars(int cents) {
-        return (double) cents / 60;
+        return cents / 100.0;
     }
 
     @Override
@@ -29,7 +29,10 @@ public class WaitingForMoneyState extends StateOfVendingMachine {
         vm.addMoneyInput(money);
         if(snack == null) System.out.println("Select a snack");
         else {
-            if(vm.getMoneyInput() >= snack.getPrice()) vm.setState(new DispensingSnackState());
+            if(vm.getMoneyInput() >= snack.getPrice()) {
+                vm.setState(new DispensingSnackState());
+                vm.dispenseSnack();
+            }
         }
     }
 
