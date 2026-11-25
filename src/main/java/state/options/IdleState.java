@@ -1,12 +1,35 @@
 package state.options;
 
+import model.Snack;
 import state.StateOfVendingMachine;
 import state.VendingMachine;
 
 public class IdleState extends StateOfVendingMachine {
+
     @Override
-    public void change(VendingMachine vm) {
-        System.out.println("Idle → Waiting for Money");
-        vm.setState(new WaitingMoney());
+    public void selectSnack(VendingMachine vm, String snackname) {
+        Snack snack = vm.getSnack(snackname);
+
+        if(snack == null) System.out.println("Snack not available");
+        else {
+            vm.setSnackSelected(snack);
+            vm.setState(new WaitingForMoneyState());
+
+            System.out.println("Insert $" + this.inDollars(snack.getPrice()));
+        }
+    }
+
+    private double inDollars(int cents) {
+        return (double) cents / 60;
+    }
+
+    @Override
+    public void insertMoney(VendingMachine vm, int money) {
+        vm.addMoneyInput(money);
+    }
+
+    @Override
+    public void dispenseSnack(VendingMachine vm) {
+        System.out.println("Please select snack first");
     }
 }
