@@ -66,8 +66,8 @@ private int moneyInput; //in cents
         }
     }
 
-    public void refundExtra() {
-        System.out.println("Collect any extra funds below");
+    public void refund(double refund) {
+        System.out.println("Collect $" + refund + " below");
         this.moneyInput = 0;
     }
 

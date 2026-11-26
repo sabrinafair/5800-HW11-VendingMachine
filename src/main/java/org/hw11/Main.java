@@ -1,17 +1,26 @@
 package org.hw11;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import handlers.*;
+import state.VendingMachine;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        SnackDispenseHandler chain = new CokeHandler(new PepsiHandler(new CheetosHandler(new DoritosHandler(new KitKatHandler(new SnickersHandler(null))))));
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+        VendingMachine vm = new VendingMachine();
+        vm.setDispenseHandler(chain);
+
+        //test selecting coke and dispensing
+        System.out.println("USER SELECTING SNACK");
+        vm.selectSnack("Coke");
+        System.out.println("USER INSERTING $2");
+        vm.insertMoney(200);
+
+        //testing getting snickers when there are none
+        System.out.println("USER SELECTING SNACK");
+        vm.selectSnack("Snickers");
+        System.out.println("USER INSERTING $2");
+        vm.insertMoney(200);
+
     }
 }

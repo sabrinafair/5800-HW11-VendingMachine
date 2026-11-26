@@ -14,13 +14,12 @@ public final class Config {
             new Snack("Cheetos", 225, 6),
             new Snack("Doritos", 225, 2),
             new Snack("KitKat", 150, 7),
-            new Snack("Snickers", 150, 3),
+            new Snack("Snickers", 150, 0),
             new Snack("Sprite", 175, 5),
             new Snack("M&Ms", 150, 0),
             new Snack("Pretzels", 125, 4),
             new Snack("Skittles", 150, 6),
             new Snack("Trail Mix", 275, 1)
     ));
-    public static final String EXAMPLE_MESSAGE2 = "This is an example message2";
 
 }

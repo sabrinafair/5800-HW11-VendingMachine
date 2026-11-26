@@ -19,10 +19,14 @@ public abstract class SnackDispenseHandler {
 
             if(snack == null || snack.getQuantity() <= 0){
                 System.out.println(getSnackname() + " is out of stock");
+                vm.refund(vm.getMoneyInput() / 100.0);
                 return false;
             }
             System.out.println("Dispensing " + getSnackname());
             snack.setQuantity(snack.getQuantity() - 1);
+            int totalRefund = vm.getMoneyInput() - vm.getSnackSelected().getPrice();
+            double totalRefundDollars = totalRefund / 100.0;
+            vm.refund(totalRefundDollars);
             return true;
         }
 

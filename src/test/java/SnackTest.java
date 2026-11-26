@@ -1,133 +1,126 @@
-//import config.Config;
-//import model.Message;
-//import model.User;
-//import org.junit.jupiter.api.Test;
-//import services.ChatHistory;
-//import services.ChatServer;
-//
-//import java.util.List;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//public class SnackTest {
-//    ChatServer chat = new ChatServer();
-//
-//    User userA = new User("userA", chat);
-//    User userB = new User("userB", chat);
-//    User userC = new User("userC", chat);
-//
-//    ChatHistory history;
-//
-//    @Test
-//    public void testSendingMessageToUnregisteredUser() {
-//        chat.registerUser(userA);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//
-//        assertFalse(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to not be equal since user that was not registered should not have gotten message");
-//    }
-//
-//    @Test
-//    public void testBlockedSendingMessageToUser() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        userB.blockUser(userA);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//
-//        assertFalse(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to not be equal since user was blocked");
-//
-//    }
-//
-//    @Test
-//    public void testSendingMessageToUser() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//
-//        assertTrue(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to be equal since user was registered and not blocked");
-//
-//    }
-//
-//    @Test
-//    public void testSendingMessageThenUnsend() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//        userA.undoLastMessage();
-//
-//        assertFalse(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to not be equal since user was unsent message");
-//
-//    }
-//
-//    @Test
-//    void testUnregisteredUserIsRemoved() {
-//        chat.registerUser(userA);
-//        chat.unregisterUser(userA);
-//        assertFalse(chat.getRegisteredUsers().contains(userA));
-//    }
-//
-//    @Test
-//    void testMessageIsSentToMultipleRecipients() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        chat.registerUser(userC);
-//        userA.sendMessage(List.of(userB, userC), Config.EXAMPLE_MESSAGE);
-//
-//        assertTrue(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to be equal since users were registered and not blocked");
-//        assertTrue(hasMessage(userC, Config.EXAMPLE_MESSAGE), "Exepected messages to be equal since users were registered and not blocked");
-//
-//    }
-//
-//    @Test
-//    void testBlockedRecipientDoesNotReceiveButOtherRecipientDoes() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        chat.registerUser(userC);
-//        userC.blockUser(userA);
-//        userA.sendMessage(List.of(userB, userC), Config.EXAMPLE_MESSAGE);
-//
-//        assertTrue(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected message to be equal since user was registered and not blocked");
-//        assertFalse(hasMessage(userC, Config.EXAMPLE_MESSAGE), "Exepected message to not be equal since user was blocked");
-//
-//    }
-//
-//    @Test
-//    void testUnblockedUserCanSendMessagesAgain() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//        userB.blockUser(userA);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//        assertFalse(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to not be equal since user was blocked");
-//
-//        userB.unblockUser(userA);
-//        userA.sendMessage(List.of(userB), Config.EXAMPLE_MESSAGE);
-//        assertTrue(hasMessage(userB, Config.EXAMPLE_MESSAGE), "Exepected messages to be equal since user was registered and not blocked");
-//
-//    }
-//
-//    @Test
-//    void getLastMessageReturnsMostRecentMessage() {
-//        chat.registerUser(userA);
-//        chat.registerUser(userB);
-//
-//        history = new ChatHistory();
-//
-//        Message m1 = new Message(userA, List.of(userB), Config.EXAMPLE_MESSAGE);
-//        Message m2 = new Message(userA, List.of(userB), Config.EXAMPLE_MESSAGE);
-//
-//        history.addMessage(m1);
-//        history.addMessage(m2);
-//        assertSame(m2, history.getLastMessage().orElseThrow(), "Exepected messages to be equal since history should return last message");
-//
-//    }
-//
-//
-//    private boolean hasMessage(User user, String expectedContent) {
-//        for (Message message : user.getChatHistory()) {
-//            if (message.getContent().equals(expectedContent)) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-//}
+import config.Config;
+import handlers.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import state.VendingMachine;
+import state.options.DispensingSnackState;
+import state.options.WaitingForMoneyState;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class SnackTest {
+    SnackDispenseHandler chain = new CokeHandler(new PepsiHandler(new CheetosHandler(new DoritosHandler(new KitKatHandler(new SnickersHandler(null))))));
+    VendingMachine vm = new VendingMachine();
+    private final PrintStream standardOut = System.out;
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        // Redirect System.out to our custom stream before each test
+        System.setOut(new PrintStream(outputStreamCaptor));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // Always restore the original System.out after each test
+        System.setOut(standardOut);
+    }
+    @Test
+    public void testSnackSelectionIdleState() {
+        vm.setDispenseHandler(chain);
+        vm.selectSnack("Coke");
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Insert $1.75"; //selecting coke in idle state should display 'Insert $1.75'
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testInsertMoneyIdleState() {
+        vm.setDispenseHandler(chain);
+        vm.insertMoney(200);
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Please select snack first";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDispenseSnackIdleState() {
+        vm.setDispenseHandler(chain);
+        vm.dispenseSnack();
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Please select snack first";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testSnackSelectionWaitingState() {
+        vm.setDispenseHandler(chain);
+        vm.setState(new WaitingForMoneyState());
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Waiting money input";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testInsertMoneyWaitingState() {
+        vm.setDispenseHandler(chain);
+        vm.insertMoney(200);
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Select a snack";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDispenseSnackWaitingState() {
+        vm.setDispenseHandler(chain);
+        vm.dispenseSnack();
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Select a snack";
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testSnackSelectionDispenseState() {
+        vm.setDispenseHandler(chain);
+        vm.setState(new DispensingSnackState());
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Currently Dispensing snack: " + vm.getSnackSelected();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testInsertMoneyDispenseState() {
+        vm.setDispenseHandler(chain);
+        vm.setState(new DispensingSnackState());
+        vm.insertMoney(200);
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Select a snack";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDispenseSnackDispenseState() {
+        vm.setDispenseHandler(chain);
+        vm.setState(new DispensingSnackState());
+        vm.dispenseSnack();
+        String[] lines = outputStreamCaptor.toString().trim().split("\\R");
+        String actual = lines[lines.length - 1];
+        String expected = "Select a snack";
+
+        assertEquals(expected, actual);
+    }
+}

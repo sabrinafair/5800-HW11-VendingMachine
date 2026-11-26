@@ -28,7 +28,6 @@ public class DispensingSnackState extends StateOfVendingMachine {
             int moneyNeeded = total - currMoney;
             if(moneyNeeded <= 0) {
                 vm.chainDispense();
-                vm.refundExtra();
                 vm.setSnackSelected(null);
                 vm.setState(new IdleState());
             }else System.out.println("Not enought money");
