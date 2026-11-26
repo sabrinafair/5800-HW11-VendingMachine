@@ -64,6 +64,7 @@ public class SnackTest {
     public void testSnackSelectionWaitingState() {
         vm.setDispenseHandler(chain);
         vm.setState(new WaitingForMoneyState());
+        vm.selectSnack("Coke");
         String[] lines = outputStreamCaptor.toString().trim().split("\\R");
         String actual = lines[lines.length - 1];
         String expected = "Waiting money input";
@@ -73,6 +74,7 @@ public class SnackTest {
     @Test
     public void testInsertMoneyWaitingState() {
         vm.setDispenseHandler(chain);
+        vm.setState(new WaitingForMoneyState());
         vm.insertMoney(200);
         String[] lines = outputStreamCaptor.toString().trim().split("\\R");
         String actual = lines[lines.length - 1];
@@ -83,6 +85,7 @@ public class SnackTest {
     @Test
     public void testDispenseSnackWaitingState() {
         vm.setDispenseHandler(chain);
+        vm.setState(new WaitingForMoneyState());
         vm.dispenseSnack();
         String[] lines = outputStreamCaptor.toString().trim().split("\\R");
         String actual = lines[lines.length - 1];
@@ -95,9 +98,10 @@ public class SnackTest {
     public void testSnackSelectionDispenseState() {
         vm.setDispenseHandler(chain);
         vm.setState(new DispensingSnackState());
+        vm.dispenseSnack();
         String[] lines = outputStreamCaptor.toString().trim().split("\\R");
         String actual = lines[lines.length - 1];
-        String expected = "Currently Dispensing snack: " + vm.getSnackSelected();
+        String expected = "Select a snack";
         assertEquals(expected, actual);
     }
 
